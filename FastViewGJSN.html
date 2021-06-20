@@ -1,0 +1,134 @@
+!DOCTYPE html>
+<html>
+ <head>
+ <meta charset="utf-8">
+    <title>Single location</title>
+	<link rel="shortcut icon" type="image/x-icon" src="favicon.ico">
+     <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.3.4/dist/leaflet.css" />
+	<script type="text/javascript" src="files/autoloca.geojson"></script>
+	<style>
+				html, body { width: 100%; height: 100%; margin: 0; padding: 0px; }
+				#map { width: 100%; height: 100%; }
+				#location { width: 180px; height: 35px; font-size: 28px; text-align: justify; z-index: 1000; position: absolute; bottom: 5%; left: 50px; font-family: Rockwell Nova Condensed; font-size: 28px;	color: #d851d6; fill-opacity: 0.1;  tabindex: 0; }
+				.leaflet-control .leaflet-bar { font-size: 16px; color: black; }
+				.leaflet-interactive  { stroke: #d851d6; stroke-opacity: 0.7; stroke-width: 2.5px; stroke-linecap: round; stroke-linejoin: round; fill: #d996d8; fill-opacity: 0.2; fill-rule: evenodd; }
+	</style>
+<script src="js/leaflet.js"></script>
+</head>
+<body>
+<script src="sample-geojson.js"></script>
+<script src="js/Leaflet.Editable.js"></script>
+<div id="location">0.0, 0.0</div>
+<div id="map">
+<script type="text/javascript">
+var locationInfo = document.getElementById('location');
+var map = L.map('map', {editable: true, keyboard: true, wheelPxPerZoomLevel: 256, zoomDelta: 0.125, zoomSnap: 0.125, maxZoom: 18, }),
+	tiles = L.tileLayer('https://tile{s}.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1&ts=online_hd', {
+		subdomains: '01234', tileSize: 512, zoomOffset: -1}).addTo(map);
+marker = L.marker([55.96456934815759, 38.031037025062886], { draggable: true }).addTo(map);
+marker.on('drag', function(e) {
+var lat = e.target._latlng.lat.toFixed(6),
+	lng = e.target._latlng.lng.toFixed(6);
+			locationInfo.innerHTML = lng + ', ' + lat;
+	                });
+var featureGroup = L.geoJson(data, 
+		{
+	onEachFeature: function (feature, layer) {
+		layer.bindPopup(feature.properties.name)
+        }
+    }).addTo(map);
+	map.fitBounds(featureGroup.getBounds());
+			
+      L.EditControl = L.Control.extend({
+
+        options: {
+            position: 'topleft',
+            callback: null,
+            kind: '',
+            html: ''
+        },
+
+        onAdd: function (map) {
+            var container = L.DomUtil.create('div', 'leaflet-control leaflet-bar'),
+                link = L.DomUtil.create('a', '', container);
+
+            link.href = '#';
+            link.title = 'Create a new ' + this.options.kind;
+            link.innerHTML = this.options.html;
+            L.DomEvent.on(link, 'click', L.DomEvent.stop)
+                      .on(link, 'click', function () {
+                        window.LAYER = this.options.callback.call(map.editTools);
+                      }, this);
+
+            return container;
+        }
+
+    });
+
+    L.NewLineControl = L.EditControl.extend({
+
+        options: {
+            position: 'topleft',
+            callback: map.editTools.startPolyline,
+            kind: 'line',
+            html: '/'
+        }
+
+    });
+
+    L.NewPolygonControl = L.EditControl.extend({
+
+        options: {
+            position: 'topleft',
+            callback: map.editTools.startPolygon,
+            kind: 'polygon',
+            html: '✰'
+        }
+
+    });
+
+    L.NewMarkerControl = L.EditControl.extend({
+
+        options: {
+            position: 'topleft',
+            callback: map.editTools.startMarker,
+            kind: 'marker',
+            html: '✓'
+        }
+
+    });
+
+    L.NewRectangleControl = L.EditControl.extend({
+
+        options: {
+            position: 'topleft',
+            callback: map.editTools.startRectangle,
+            kind: 'rectangle',
+            html: '❏'
+        }
+
+    });
+
+    L.NewCircleControl = L.EditControl.extend({
+
+        options: {
+            position: 'topleft',
+            callback: map.editTools.startCircle,
+            kind: 'circle',
+            html: '❍'
+        }
+
+    });
+
+    map.addControl(new L.NewMarkerControl());
+    map.addControl(new L.NewLineControl());
+    map.addControl(new L.NewPolygonControl());
+    map.addControl(new L.NewRectangleControl());
+    map.addControl(new L.NewCircleControl());
+		
+	map.on('contextmenu', function (e) {console.log(e.target)});
+	map.on('click', function (e) {console.log(e.latlng)});
+	
+</script>
+</body>
+</html>
